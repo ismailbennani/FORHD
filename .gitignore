@@ -1,0 +1,45 @@
+# compiled file, use makefile to get it
+FORHD/faceRecognizer/faceRecognizer
+
+# file too big, please download it separatly from
+# find the instructions here [http://pjreddie.com/darknet]
+FORHD/darknet/yolo.weights
+
+FORHD/faceRecognizer/imgs/faces/*
+FORHD/faceRecognizer/imgs/facesToRecognize/*
+FORHD/imgs/HLImage.jpg
+FORHD/imgs/HLMats
+__pycache__/
+FORHD/__pycache__
+
+FORHDvenv
+
+# darknet gitignore
+
+FORHD/darknet/*.o
+FORHD/darknet/*.dSYM
+FORHD/darknet/*.csv
+FORHD/darknet/*.out
+FORHD/darknet/*.png
+FORHD/darknet/*.jpg
+FORHD/darknet/old/
+FORHD/darknet/mnist/
+FORHD/darknet/data/
+FORHD/darknet/caffe/
+FORHD/darknet/grasp/
+FORHD/darknet/images/
+FORHD/darknet/opencv/
+FORHD/darknet/convnet/
+FORHD/darknet/decaf/
+FORHD/darknet/submission/
+FORHD/darknet/cfg/
+FORHD/darknet/darknet
+FORHD/darknet/.fuse*
+FORHD/darknet/bad.list
+
+# OS Generated #
+FORHD/darknet/.DS_Store*
+FORHD/darknet/ehthumbs.db
+FORHD/darknet/Icon?
+FORHD/darknet/Thumbs.db
+FORHD/darknet/*.swp
