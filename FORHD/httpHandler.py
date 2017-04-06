@@ -3,7 +3,7 @@
 from http.server import BaseHTTPRequestHandler
 from multiprocessing import Process, Queue
 from time import sleep
-
+from enum import Enum
 from blinker import signal
 
 from .const import IMGPATH, MATSPATH, PHOTORECEIVEDSIGNAL
@@ -23,6 +23,9 @@ class HttpHandler(BaseHTTPRequestHandler):
     faceRecognizerHandler = None
     verbose = True
     PhotoReceivedEvent = signal(PHOTORECEIVEDSIGNAL)
+    ServerProperty = Enum("ServerProperty",
+    {
+    }
 
     # LOG UTILITIES
 
@@ -61,39 +64,43 @@ class HttpHandler(BaseHTTPRequestHandler):
         """
         self.generic_answer("PhotoRequest")
 
-    def send_object_rays(self):
+    def get_object_rays(self):
         """ Send all the rays we computed since last time we called this function.
             null stands for no ray
         """
-        rays = "ray:null"
+        rays = ""
         # Get all the object rays we have ..
         while self.yoloHandler.hasObject():
             nextRay = self.yoloHandler.getNextRaycast()
             rays += "\nray:%s" % str(nextRay)
-        # .. and all the face rays we have
-        if rays == "ray:null":
-            sleep(0.5)
-        self.generic_answer(rays)
+        return rays
 
-    def send_recognized_faces(self):
-        rays = "faceray:null"
+    def get_recognized_faces(self):
+        """ Send all the faces we did recognize
+        """
+        rays = ""
         while self.faceRecognizerHandler.hasRecognizedFaces():
             nextRecognizedFace = self.faceRecognizerHandler.getRecognizedFace()
             rays += "\nfaceray:%s" % str(nextRecognizedFace)
-        if rays == "ray:null":
-            sleep(0.5)
-        self.generic_answer(rays)
+        return rays
 
 
     def send_unknown_faces(self):
         """ Send all the faces we didn't recognize
         """
-        rays = "unknownface:ray:null"
+        rays = ""
         while self.faceRecognizerHandler.hasUnkownFaces():
             nextUnknownFace = self.faceRecognizerHandler.get()
             rays += "\nunknownface:ray:%s" % str(nextUnknownFace.raycast)
-        if rays == "ray:null":
-            sleep(0.5)
+        return rays
+
+    def send_all_rays(self):
+        self.rays = "rays:"
+        rays += self.get_object_rays()[1:]
+        if self.SEND_FACES:
+            rays += self.send_recognized_faces()
+            rays += self.send_unknown_faces()
+
         self.generic_answer(rays)
 
     # HTTP REQUESTS
@@ -114,7 +121,7 @@ class HttpHandler(BaseHTTPRequestHandler):
             f.write(mats)
         self.PhotoReceivedEvent.send("HttpHandler", imgpath = IMGPATH,
                                                     matspath = MATSPATH)
-        self.dummy_answer()
+        self.send_all_rays()
 
     def do_GET(self):
         """ Deal with GET requests. We ignore them since they are the first
@@ -146,24 +153,17 @@ class HttpHandler(BaseHTTPRequestHandler):
     def handle_msg(self, msg):
         if msg == "letsgo":
             self.handle_letsgo(msg)
-        if msg == "nextobjects":
-            self.handle_nextobjects(msg)
-        if msg == "nextfaces":
-            self.handle_nextfaces(msg)
         if msg[:7] == "camsize":
             self.handle_camsize(msg)
         if msg[:3] == "obj":
             self.handle_obj(msg)
+        if msg[:8] == "setting:":
+            self.handle_setting(msg)
 
     def handle_letsgo(self, msg):
         """ Request an image
         """
         self.request_photo()
-
-    def handle_nextobjects(self, msg):
-        """ Send all the objects we have
-        """
-        self.send_object_rays()
 
     def handle_camsize(self, msg):
         """ Set camsize on faceRecognizer and yoloHandler and send a dummy
@@ -181,11 +181,16 @@ class HttpHandler(BaseHTTPRequestHandler):
         """
         self.dummy_answer()
 
-    def handle_nextfaces(self, msg):
-        """ Send all the faces we have
+    def handle_setting(self, msg):
+        """ Change settings
         """
-        self.send_recognized_faces()
-        self.send_unknown_faces()
+        settingStrings = msg[8:].split("\n")
+        for setting in settingStrings:
+            if setting[:10] == "SENDFACES:":
+                if setting[10:] == "true":
+                    self.props[ServerProperty.SEND_FACES] = True;
+                elif setting[10:] == "false":
+                    self.props[ServerProperty.SEND_FACES] = False;
 
     # UTILS
 
