@@ -3,12 +3,12 @@
 from http.server import BaseHTTPRequestHandler
 from multiprocessing import Process, Queue
 from time import sleep
-from enum import Enum
+
 from blinker import signal
+from enum import Enum
 
 from .const import IMGPATH, MATSPATH, PHOTORECEIVEDSIGNAL
 from .utils import debuglog, infolog
-
 
 class HttpHandler(BaseHTTPRequestHandler):
     """ The handler for each HTTP request the server will receive. One instance
@@ -24,7 +24,10 @@ class HttpHandler(BaseHTTPRequestHandler):
     verbose = True
     PhotoReceivedEvent = signal(PHOTORECEIVEDSIGNAL)
     ServerProperty = Enum("ServerProperty",
+                          [("SEND_FACES", 0)])
+    props =\
     {
+        0 : True,
     }
 
     # LOG UTILITIES
