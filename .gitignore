@@ -1,0 +1,7 @@
+# compiled file, use makefile to get it
+FORHD/faceRecognizer/
+FORHD/darknet/
+FORHD/imgs/
+__pycache__/
+FORHD/__pycache__/
+FORHDvenv
