@@ -24,10 +24,10 @@ class HttpHandler(BaseHTTPRequestHandler):
     verbose = True
     PhotoReceivedEvent = signal(PHOTORECEIVEDSIGNAL)
     ServerProperty = Enum("ServerProperty",
-                          [("SEND_FACES", 0)])
+                          "SEND_FACES")
     props =\
     {
-        0 : True,
+        ServerProperty.SEND_FACES : True,
     }
 
     # LOG UTILITIES
@@ -88,21 +88,21 @@ class HttpHandler(BaseHTTPRequestHandler):
         return rays
 
 
-    def send_unknown_faces(self):
+    def get_unknown_faces(self):
         """ Send all the faces we didn't recognize
         """
         rays = ""
-        while self.faceRecognizerHandler.hasUnkownFaces():
+        while self.faceRecognizerHandler.hasUnknownFaces():
             nextUnknownFace = self.faceRecognizerHandler.get()
             rays += "\nunknownface:ray:%s" % str(nextUnknownFace.raycast)
         return rays
 
     def send_all_rays(self):
-        self.rays = "rays:"
+        rays = "rays:"
         rays += self.get_object_rays()[1:]
-        if self.SEND_FACES:
-            rays += self.send_recognized_faces()
-            rays += self.send_unknown_faces()
+        if self.props[self.ServerProperty.SEND_FACES]:
+            rays += self.get_recognized_faces()
+            rays += self.get_unknown_faces()
 
         self.generic_answer(rays)
 
@@ -160,7 +160,7 @@ class HttpHandler(BaseHTTPRequestHandler):
             self.handle_camsize(msg)
         if msg[:3] == "obj":
             self.handle_obj(msg)
-        if msg[:8] == "setting:":
+        if msg[:7] == "setting":
             self.handle_setting(msg)
 
     def handle_letsgo(self, msg):
@@ -187,13 +187,14 @@ class HttpHandler(BaseHTTPRequestHandler):
     def handle_setting(self, msg):
         """ Change settings
         """
-        settingStrings = msg[8:].split("\n")
+        settingStrings = msg[7:].split("\n")
         for setting in settingStrings:
-            if setting[:10] == "SENDFACES:":
-                if setting[10:] == "true":
+            if setting[:9] == "SENDFACES":
+                if setting[9:] == "true":
                     self.props[ServerProperty.SEND_FACES] = True;
-                elif setting[10:] == "false":
+                elif setting[9:] == "false":
                     self.props[ServerProperty.SEND_FACES] = False;
+        self.dummy_answer()
 
     # UTILS
 
