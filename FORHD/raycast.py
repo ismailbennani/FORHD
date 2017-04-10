@@ -6,11 +6,11 @@ from .utils import str3DPoint
 class Raycast():
     """ A representation of a raycast """
 
-    def __init__(self, label, confidence, wpointCamera, wpointCenter):
+    def __init__(self, label, confidence, wpointCenterNear, wpointCenterFar):
         self.label = label
         self.confidence = confidence
-        self.wpointCamera = wpointCamera
-        self.wpointCenter = wpointCenter
+        self.wpointCenterNear = wpointCenterNear
+        self.wpointCenterFar = wpointCenterFar
 
     @staticmethod
     def parseMats(matsString):
@@ -52,9 +52,9 @@ class Raycast():
             projection
         """
         _from = np.array([0., 0., 0.])
-        axsX = projection[:,0]
-        axsY = projection[:,1]
-        axsZ = projection[:,2]
+        axsX = projection[0]
+        axsY = projection[1]
+        axsZ = projection[2]
         _from[2] = vector[2] / axsZ[2] # from.z = to.z / axsZ.z;
         _from[1] = (vector[1] - (_from[2] * axsY[2])) / axsY[1] # from.y = (to.y - (from.z * axsY.z)) / axsY.y;
         _from[0] = (vector[0] - (_from[2] * axsX[2])) / axsX[0] # from.x = (to.x - (from.z * axsX.z)) / axsX.x;
@@ -73,14 +73,11 @@ class Raycast():
                 image
             """
             # we transform the coordinates of object2D to relative coordinates
-            ImagePosZeroToOne = np.array([point2D[0] / camsize[0],
-                                          1. - point2D[1] / camsize[1]])
+            ImagePosZeroToOne = [point2D[0] / camsize[0],
+                                 1. - (point2D[1] / camsize[1])]
             # we transform them into coordinates between -1 and 1
-            # !!! These coordinates are relative to the picture frame, which is
-            #     bigger than the viewport, it seems that this is a probleme since
-            #     the 3D objects we find are not in the right position.
-            #     We multiply the result by 1.4 to "expand" the objects a little bit
-            ImagePosProjected = (ImagePosZeroToOne * 2. - np.array([1., 1.]))
+            ImagePosProjected = [ImagePosZeroToOne[0] * 2 - 1,
+                                 ImagePosZeroToOne[1] * 2 - 1]
             # we compute one possible position of the object in the camera space
             # coordinates
             CameraSpacePos = Raycast.unProjectVector(projection,
@@ -94,12 +91,12 @@ class Raycast():
             # space and CameraSpacePos is the position of the object in the camera
             # space. Those two points define a ray going from the camera to the
             # 3D object we are looking for
+            wpointCamera = world.dot(np.array([0., 0., 0., 1.]))
             wpoint = world.dot(np.concatenate((CameraSpacePos, [1.])))
 
-            return wpoint
-
-        wpointCamera = world.dot(np.array([0., 0., 0., 1]))
-        wpointCenter = get3DPoint([object2D.x, object2D.y])
+            return wpointCamera, wpoint
+            
+        wpointCamera, wpointCenter = get3DPoint([object2D.x, object2D.y])
 
         res = Raycast(object2D.label,
                       object2D.confidence,
@@ -111,9 +108,9 @@ class Raycast():
     def __str__(self):
         return "%s;%s;%s;%s" % (self.label,
                                    self.confidence,
-                                   str3DPoint(self.wpointCamera),
-                                   str3DPoint(self.wpointCenter))
+                                   str3DPoint(self.wpointCenterNear),
+                                   str3DPoint(self.wpointCenterFar))
 
     def __eq__(self, otherRaycast):
-        return self.wpointcamera == otherRaycast.wpointCamera\
-           and self.wpointCenter == otherRaycast.wpointCenter
+        return self.wpointcamera == otherRaycast.wpointCenterNear\
+           and self.wpointCenter == otherRaycast.wpointCenterFar

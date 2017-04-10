@@ -172,6 +172,7 @@ class HttpHandler(BaseHTTPRequestHandler):
         """ Set camsize on faceRecognizer and yoloHandler and send a dummy
             answer
         """
+        debuglog("Resolution: %s" % msg[7:])
         parseMsg = msg[7:].split("x")
         self.yoloHandler.camsize[0] = float(parseMsg[0])
         self.yoloHandler.camsize[1] = float(parseMsg[1])

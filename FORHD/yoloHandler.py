@@ -54,7 +54,7 @@ class YoloHandler():
         # synchronized queue where we store the rays we compute
         self.raycastQueue = Queue()
         # synchronized float array used to store the camera resolution
-        self.camsize = Array('f', (1280., 720.))
+        self.camsize = Array('f', (896., 504.))
 
         # we spawn a process that will feed yolo whenever it needs to (which is
         # at every new picture received if yolo is finished with the previous
@@ -117,17 +117,19 @@ class YoloHandler():
             # Lines look like label;x;y;w;h where x,y are the center of the
             # the bounding rect and w,h half its width and height
             lastLine = yolopipe.readline()[:-1].decode("utf8")
-            parsedLine = lastLine.split(";")
-            object2D = Object2D(parsedLine[0], parsedLine[1], parsedLine[2],
-                                parsedLine[3], parsedLine[4], parsedLine[5])
-
-            matsString = self.nextMats.value
-            while matsString == "":
+            try:
+                parsedLine = lastLine.split(";")
+                object2D = Object2D(parsedLine[0], parsedLine[1], parsedLine[2],
+                                    parsedLine[3], parsedLine[4], parsedLine[5])
                 matsString = self.nextMats.value
-            with open(matsString, 'r') as f:
-                projection, world = Raycast.parseMats(f.read())
-            raycast = Raycast.fromObject2D(object2D, projection, world, self.camsize)
-            self.raycastQueue.put(raycast)
+                while matsString == "":
+                    matsString = self.nextMats.value
+                with open(matsString, 'r') as f:
+                    projection, world = Raycast.parseMats(f.read())
+                raycast = Raycast.fromObject2D(object2D, projection, world, self.camsize)
+                self.raycastQueue.put(raycast)
+            except:
+                continue;
 
         yolopipe.close()
 
