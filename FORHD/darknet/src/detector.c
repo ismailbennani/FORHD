@@ -580,7 +580,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
           }
         }
         draw_detections(im, l.w*l.h*l.n, thresh, boxes, probs, names, alphabet, l.classes);
-        save_image(im, "/home/lahkim/Documents/PlaceObjects/imgs/predictions");
+        save_image(im, "../imgs/predictions");
 
         free_image(im);
         free_image(sized);
