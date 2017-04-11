@@ -6,9 +6,9 @@ FORHD/faceRecognizer/faceRecognizer
 FORHD/darknet/yolo.weights
 
 FORHD/faceRecognizer/imgs/faces/*
-FORHD/faceRecognizer/imgs/facesToRecognize/*
-FORHD/imgs/HLImage.jpg
-FORHD/imgs/HLMats
+FORHD/imgs/*
+!FORHD/imgs/facesToRecognize
+FORHD/imgs/facesToRecognize/*
 __pycache__/
 FORHD/__pycache__
 

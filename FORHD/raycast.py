@@ -6,11 +6,14 @@ from .utils import str3DPoint
 class Raycast():
     """ A representation of a raycast """
 
-    def __init__(self, label, confidence, wpointCenterNear, wpointCenterFar):
+    def __init__(self, label, confidence, wpointCenterNear, wpointCenterFar,
+                       width, height):
         self.label = label
         self.confidence = confidence
         self.wpointCenterNear = wpointCenterNear
         self.wpointCenterFar = wpointCenterFar
+        self.width = width
+        self.height = height
 
     @staticmethod
     def parseMats(matsString):
@@ -95,21 +98,25 @@ class Raycast():
             wpoint = world.dot(np.concatenate((CameraSpacePos, [1.])))
 
             return wpointCamera, wpoint
-            
+
         wpointCamera, wpointCenter = get3DPoint([object2D.x, object2D.y])
 
         res = Raycast(object2D.label,
                       object2D.confidence,
                       wpointCamera,
-                      wpointCenter)
+                      wpointCenter,
+                      object2D.w,
+                      object2D.h)
 
         return res
 
     def __str__(self):
-        return "%s;%s;%s;%s" % (self.label,
+        return "%s;%s;%s;%s;%s;%s" % (self.label,
                                    self.confidence,
                                    str3DPoint(self.wpointCenterNear),
-                                   str3DPoint(self.wpointCenterFar))
+                                   str3DPoint(self.wpointCenterFar),
+                                   self.width,
+                                   self.height)
 
     def __eq__(self, otherRaycast):
         return self.wpointcamera == otherRaycast.wpointCenterNear\

@@ -17,8 +17,8 @@ class Object2D:
                                    str(self.confidence),
                                    str(self.x),
                                    str(self.y),
-                                   str(self.w/2),
-                                   str(self.h/2))
+                                   str(self.w),
+                                   str(self.h))
 
 class Object3D:
     """ Representation of a 3D object in world space """
